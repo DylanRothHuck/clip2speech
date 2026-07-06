@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/clip2speech/config"
+VOICE_DIR="${PIPER_VOICE_DIR:-$HOME/.local/share/piper-voices}"
+DEFAULT_VOICE="es_AR-daniela-high.onnx"
+LENGTH_SCALE=0.6
+SENTENCE_SILENCE=0.2
+
+if [[ -f "$CONFIG_FILE" ]]; then
+    source "$CONFIG_FILE"
+fi
+
+PIPER_BIN="${PIPER_BIN:-$(command -v piper || true)}"
+if [[ -z "$PIPER_BIN" ]]; then
+    echo "Error: piper not found. Set PIPER_BIN or install piper-tts." >&2
+    exit 1
+fi
+
+if ! command -v aplay &>/dev/null; then
+    echo "Error: aplay not found. Install alsa-utils." >&2
+    exit 1
+fi
+
+if ! command -v wl-paste &>/dev/null; then
+    echo "Error: wl-paste not found. Install wl-clipboard." >&2
+    exit 1
+fi
+
+voice_file="$VOICE_DIR/$DEFAULT_VOICE"
+if [[ ! -f "$voice_file" ]]; then
+    echo "Error: voice model not found at $voice_file" >&2
+    exit 1
+fi
+
+piper_pid=$(pidof "$(basename "$PIPER_BIN")" 2>/dev/null || true)
+aplay_pid=$(pidof aplay 2>/dev/null || true)
+
+if [[ -n "$piper_pid" || -n "$aplay_pid" ]]; then
+    [[ -n "$piper_pid" ]] && kill "$piper_pid" 2>/dev/null
+    [[ -n "$aplay_pid" ]] && kill "$aplay_pid" 2>/dev/null
+    exit 0
+fi
+
+if [[ "$1" == "selection" ]]; then
+    text=$(wl-paste --primary 2>/dev/null)
+elif [[ "$1" == "text" && -n "$2" ]]; then
+    text="$2"
+else
+    text=$(wl-paste 2>/dev/null)
+fi
+
+[[ -z "$text" ]] && exit 1
+
+echo "$text" | \
+    tr -s " \\\/\n*#" " " | \
+    "$PIPER_BIN" \
+        --model "$voice_file" \
+        --output-raw \
+        --length_scale "$LENGTH_SCALE" \
+        --sentence_silence "$SENTENCE_SILENCE" | \
+    aplay -r 22050 -f S16_LE -t raw -
