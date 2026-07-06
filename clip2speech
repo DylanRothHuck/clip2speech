@@ -42,10 +42,13 @@ if [[ -n "$piper_pid" || -n "$aplay_pid" ]]; then
     exit 0
 fi
 
-if [[ "$1" == "selection" ]]; then
+arg1="${1:-}"
+arg2="${2:-}"
+
+if [[ "$arg1" == "selection" ]]; then
     text=$(wl-paste --primary 2>/dev/null)
-elif [[ "$1" == "text" && -n "$2" ]]; then
-    text="$2"
+elif [[ "$arg1" == "text" && -n "$arg2" ]]; then
+    text="$arg2"
 else
     text=$(wl-paste 2>/dev/null)
 fi
