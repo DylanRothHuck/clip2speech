@@ -83,10 +83,13 @@ Run again while speaking to **stop** the current utterance (toggle behavior).
 Optional config file at `~/.config/clip2speech/config`:
 
 ```bash
+# Piper binary path — important when running from keybinds (limited PATH)
+PIPER_BIN="$HOME/.local/bin/piper"
+
 # Voice model directory
 PIPER_VOICE_DIR="$HOME/.local/share/piper-voices"
 
-# Default voice filename
+# Default voice filename (script has its own default per variant)
 DEFAULT_VOICE="es_AR-daniela-high.onnx"
 
 # Speed (lower = faster, default 0.6)
@@ -94,12 +97,10 @@ LENGTH_SCALE=0.6
 
 # Silence between sentences in seconds (default 0.2)
 SENTENCE_SILENCE=0.2
-
-# Piper binary path (auto-detected from PATH if not set)
-PIPER_BIN="/usr/bin/piper"
 ```
 
-You can also set these as environment variables.
+You can also set these as environment variables. `PIPER_BIN` is the most important
+one — Hyprland keybinds run with a minimal PATH, so auto-detection may fail.
 
 ## Hyprland keybindings
 

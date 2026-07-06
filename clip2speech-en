@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+export WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-0}"
+
 CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/clip2speech/config"
 VOICE_DIR="${PIPER_VOICE_DIR:-$HOME/.local/share/piper-voices}"
 DEFAULT_VOICE="en_US-lessac-high.onnx"
